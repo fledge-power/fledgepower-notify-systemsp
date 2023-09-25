@@ -87,10 +87,10 @@ jobs:
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --config Release
           cd build 
           make
-          make systemsp_coverage_sonar
+          make systemspn_coverage_sonar
       - name: Run sonar-scanner
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          sonar-scanner --define sonar.host.url="${{ env.SONAR_SERVER_URL }}" --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}" --define sonar.organization="fledge-power" --define sonar.projectKey="fledge-power_fledgepower-notify-systemsp" --define sonar.inclusions="src/*,include/*" --define sonar.coverageReportPaths="build/systemsp_coverage_sonar-sonarqube.xml"
+          sonar-scanner --define sonar.host.url="${{ env.SONAR_SERVER_URL }}" --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}" --define sonar.organization="fledge-power" --define sonar.projectKey="fledge-power_fledgepower-notify-systemsp" --define sonar.inclusions="src/*,include/*" --define sonar.coverageReportPaths="build/systemspn_coverage_sonar-sonarqube.xml"
