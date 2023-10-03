@@ -28,9 +28,6 @@ namespace systemspn {
 class NotifySystemSp {
 public:  
     NotifySystemSp() = default;
-    NotifySystemSp& operator=(const NotifySystemSp& other) = delete;
-    NotifySystemSp(NotifySystemSp &&other) noexcept = delete;
-    NotifySystemSp const & operator=(NotifySystemSp &&other) = delete;
     ~NotifySystemSp();
 
     void reconfigure(const ConfigCategory& config);
