@@ -127,7 +127,7 @@ PLUGIN_HANDLE plugin_init(ConfigCategory* config)
  * @param message		The message from notification
  */
 bool plugin_deliver(PLUGIN_HANDLE handle,
-                    const std::string& deliveryName,
+                    const std::string& /*deliveryName*/,
                     const std::string& notificationName,
                     const std::string& triggerReason,
                     const std::string& message)

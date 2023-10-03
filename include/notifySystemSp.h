@@ -21,13 +21,16 @@
 
 #include "configPlugin.h"
 
-typedef void (*FuncPtr)(void *, void *);
+using FuncPtr = void (*)(void *, void *);
 
 namespace systemspn {
 
 class NotifySystemSp {
 public:  
-    NotifySystemSp();
+    NotifySystemSp() = default;
+    NotifySystemSp& operator=(const NotifySystemSp& other) = delete;
+    NotifySystemSp(NotifySystemSp &&other) noexcept = delete;
+    NotifySystemSp const & operator=(NotifySystemSp &&other) = delete;
     ~NotifySystemSp();
 
     void reconfigure(const ConfigCategory& config);

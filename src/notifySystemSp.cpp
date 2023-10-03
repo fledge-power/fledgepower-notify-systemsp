@@ -23,11 +23,6 @@ using namespace DatapointUtility;
 using namespace systemspn;
 
 /**
- * Constructor for the NotifySystemSp class.
- */
-NotifySystemSp::NotifySystemSp() {}
-
-/**
  * Destructor for the NotifySystemSp class.
  */
 NotifySystemSp::~NotifySystemSp() {
@@ -256,8 +251,8 @@ void NotifySystemSp::registerIngest(FuncPtr ingest, void *data) {
  * @param message The notification message
  * @return True if the notification was process sucessfully, else false
  */
-bool NotifySystemSp::notify(const std::string& notificationName, const std::string& triggerReason,
-                            const std::string& message) {
+bool NotifySystemSp::notify(const std::string& /*notificationName*/, const std::string& triggerReason,
+                            const std::string& /*message*/) {
     std::lock_guard<std::mutex> guard(m_configMutex);
     std::string beforeLog = ConstantsSystem::NamePlugin + " - NotifySystemSp::notify -";
     if (!isEnabled()) {

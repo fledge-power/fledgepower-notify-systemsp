@@ -26,7 +26,7 @@ struct DataInfo {
 
     DataInfo(const std::string& pivotIdInit, const std::string& pivotTypeInit, const std::string& assetNameInit):
         pivotId(pivotIdInit), pivotType(pivotTypeInit), assetName(assetNameInit) {}
-    virtual ~DataInfo() {} // Needed for dynamic_cast
+    virtual ~DataInfo() = default; // Needed for dynamic_cast
 };
 
 // Data info specific to cyclic Status Points
@@ -36,7 +36,7 @@ struct CyclicDataInfo : public DataInfo {
     CyclicDataInfo(const std::string& pivotIdInit, const std::string& pivotTypeInit,
                    const std::string& assetNameInit, int cycleSecInit):
         DataInfo{pivotIdInit, pivotTypeInit, assetNameInit}, cycleSec(cycleSecInit) {}
-    virtual ~CyclicDataInfo() {} // Needed for dynamic_cast
+    ~CyclicDataInfo() override = default; // Needed for dynamic_cast
 };
 
 class ConfigPlugin {
@@ -51,6 +51,7 @@ public:
     
 private:
     void m_reset();
+    void m_importDatapoint(const rapidjson::Value& datapoint);
 
     std::vector<std::string> m_allDataTypes{"acces", "prt.inf"};
     std::map<std::string, std::vector<std::shared_ptr<DataInfo>>> m_dataSystem;

@@ -54,69 +54,78 @@ void ConfigPlugin::importExchangedData(const std::string & exchangeConfig) {
     const rapidjson::Value& datapoints = exchangeData[ConstantsSystem::JsonDatapoints];
 
     for (const rapidjson::Value& datapoint : datapoints.GetArray()) {
-        
-        if (!datapoint.IsObject()) {
-            UtilityPivot::log_error("%s datapoint is not an object", beforeLog.c_str());
-            continue;
-        }
-        
-        if (!datapoint.HasMember(ConstantsSystem::JsonPivotType) || !datapoint[ConstantsSystem::JsonPivotType].IsString()) {
-            UtilityPivot::log_error("%s pivot_type not found in datapoint or is not a string", beforeLog.c_str());
-            continue;
-        }
+        m_importDatapoint(datapoint);
+    }
+}
 
-        std::string type = datapoint[ConstantsSystem::JsonPivotType].GetString();
-        if (type != ConstantsSystem::JsonCdcSps && type != ConstantsSystem::JsonCdcDps) {
-            // Ignore datapoints that are not a TS
-            continue;
-        }
+/**
+ * Import data from a single datapoint of exchanged data
+ * 
+ * @param datapoint : datapoint to parse and import
+*/
+void ConfigPlugin::m_importDatapoint(const rapidjson::Value& datapoint) {
+    std::string beforeLog = ConstantsSystem::NamePlugin + " - ConfigPlugin::m_importDatapoint :";
+    if (!datapoint.IsObject()) {
+        UtilityPivot::log_error("%s datapoint is not an object", beforeLog.c_str());
+        return;
+    }
+    
+    if (!datapoint.HasMember(ConstantsSystem::JsonPivotType) || !datapoint[ConstantsSystem::JsonPivotType].IsString()) {
+        UtilityPivot::log_error("%s pivot_type not found in datapoint or is not a string", beforeLog.c_str());
+        return;
+    }
 
-        if (!datapoint.HasMember(ConstantsSystem::JsonPivotId) || !datapoint[ConstantsSystem::JsonPivotId].IsString()) {
-            UtilityPivot::log_error("%s pivot_id not found in datapoint or is not a string", beforeLog.c_str());
-            continue;
-        }
-        std::string pivot_id = datapoint[ConstantsSystem::JsonPivotId].GetString();
+    std::string type = datapoint[ConstantsSystem::JsonPivotType].GetString();
+    if (type != ConstantsSystem::JsonCdcSps && type != ConstantsSystem::JsonCdcDps) {
+        // Ignore datapoints that are not a TS
+        return;
+    }
 
-        if (!datapoint.HasMember(ConstantsSystem::JsonPivotSubtypes) || !datapoint[ConstantsSystem::JsonPivotSubtypes].IsArray()) {
-            // No pivot subtypes, nothing to do
-            continue;
-        }
+    if (!datapoint.HasMember(ConstantsSystem::JsonPivotId) || !datapoint[ConstantsSystem::JsonPivotId].IsString()) {
+        UtilityPivot::log_error("%s pivot_id not found in datapoint or is not a string", beforeLog.c_str());
+        return;
+    }
+    std::string pivot_id = datapoint[ConstantsSystem::JsonPivotId].GetString();
 
-        if (!datapoint.HasMember(ConstantsSystem::JsonLabel) || !datapoint[ConstantsSystem::JsonLabel].IsString()) {
-            UtilityPivot::log_error("%s label not found in datapoint or is not a string", beforeLog.c_str());
-            continue;
-        }
-        std::string label = datapoint[ConstantsSystem::JsonLabel].GetString();
+    if (!datapoint.HasMember(ConstantsSystem::JsonPivotSubtypes) || !datapoint[ConstantsSystem::JsonPivotSubtypes].IsArray()) {
+        // No pivot subtypes, nothing to do
+        return;
+    }
 
-        std::set<std::string> foundConfigs;
-        auto subtypes = datapoint[ConstantsSystem::JsonPivotSubtypes].GetArray();
+    if (!datapoint.HasMember(ConstantsSystem::JsonLabel) || !datapoint[ConstantsSystem::JsonLabel].IsString()) {
+        UtilityPivot::log_error("%s label not found in datapoint or is not a string", beforeLog.c_str());
+        return;
+    }
+    std::string label = datapoint[ConstantsSystem::JsonLabel].GetString();
 
-        for (rapidjson::Value::ConstValueIterator itr = subtypes.Begin(); itr != subtypes.End(); ++itr) {
-            std::string s = (*itr).GetString();
-            for(const auto& dataType: m_allDataTypes) {
-                if(s == dataType) {
-                    foundConfigs.insert(dataType);
-                }
+    std::set<std::string> foundConfigs;
+    auto subtypes = datapoint[ConstantsSystem::JsonPivotSubtypes].GetArray();
+
+    for (rapidjson::Value::ConstValueIterator itr = subtypes.Begin(); itr != subtypes.End(); ++itr) {
+        std::string s = (*itr).GetString();
+        for(const auto& dataType: m_allDataTypes) {
+            if(s == dataType) {
+                foundConfigs.insert(dataType);
             }
         }
+    }
 
-        if (foundConfigs.count("acces") > 0) {
-            if (!datapoint.HasMember(ConstantsSystem::JsonTsSystCycle) || !datapoint[ConstantsSystem::JsonTsSystCycle].IsInt()) {
-                UtilityPivot::log_error("%s Configuration access on %s, but no %s found", beforeLog.c_str(), label.c_str(), ConstantsSystem::JsonTsSystCycle);
-            }
-            else {
-                int cycle_s = datapoint[ConstantsSystem::JsonTsSystCycle].GetInt();
-                m_dataSystem["acces"].push_back(std::make_shared<CyclicDataInfo>(pivot_id, type, label, cycle_s));
-                UtilityPivot::log_debug("%s Configuration access on %s : [%s, %s, %d]",
-                                        beforeLog.c_str(), label.c_str(), pivot_id.c_str(), type.c_str(), cycle_s);
-            }
+    if (foundConfigs.count("acces") > 0) {
+        if (!datapoint.HasMember(ConstantsSystem::JsonTsSystCycle) || !datapoint[ConstantsSystem::JsonTsSystCycle].IsInt()) {
+            UtilityPivot::log_error("%s Configuration access on %s, but no %s found", beforeLog.c_str(), label.c_str(), ConstantsSystem::JsonTsSystCycle);
         }
-        
-        if (foundConfigs.count("prt.inf") > 0) {
-            m_dataSystem["prt.inf"].push_back(std::make_shared<DataInfo>(pivot_id, type, label));
-            UtilityPivot::log_debug("%s Configuration prt.inf on %s : [%s, %s]",
-                                        beforeLog.c_str(), label.c_str(), pivot_id.c_str(), type.c_str());
+        else {
+            int cycle_s = datapoint[ConstantsSystem::JsonTsSystCycle].GetInt();
+            m_dataSystem["acces"].push_back(std::make_shared<CyclicDataInfo>(pivot_id, type, label, cycle_s));
+            UtilityPivot::log_debug("%s Configuration access on %s : [%s, %s, %d]",
+                                    beforeLog.c_str(), label.c_str(), pivot_id.c_str(), type.c_str(), cycle_s);
         }
+    }
+    
+    if (foundConfigs.count("prt.inf") > 0) {
+        m_dataSystem["prt.inf"].push_back(std::make_shared<DataInfo>(pivot_id, type, label));
+        UtilityPivot::log_debug("%s Configuration prt.inf on %s : [%s, %s]",
+                                    beforeLog.c_str(), label.c_str(), pivot_id.c_str(), type.c_str());
     }
 }
 
@@ -135,7 +144,7 @@ bool ConfigPlugin::hasDataForType(const std::string& dataType, const std::string
     }
     const auto& dataSystem = m_dataSystem.at(dataType);
     return std::find_if(dataSystem.begin(), dataSystem.end(),
-        [pivotId](std::shared_ptr<DataInfo> di){ return di->pivotId == pivotId; }) != dataSystem.end();
+        [&pivotId](std::shared_ptr<DataInfo> di){ return di->pivotId == pivotId; }) != dataSystem.end();
 }
 
 /**
