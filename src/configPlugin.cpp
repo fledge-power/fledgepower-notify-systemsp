@@ -102,12 +102,13 @@ void ConfigPlugin::m_importDatapoint(const rapidjson::Value& datapoint) {
     auto subtypes = datapoint[ConstantsSystem::JsonPivotSubtypes].GetArray();
 
     for (rapidjson::Value::ConstValueIterator itr = subtypes.Begin(); itr != subtypes.End(); ++itr) {
-        if ((*itr).IsString()) {
-            std::string s = (*itr).GetString();
-            for(const auto& dataType: m_allDataTypes) {
-                if(s == dataType) {
-                    foundConfigs.insert(dataType);
-                }
+        if (!(*itr).IsString()) {
+            continue;
+        }
+        std::string s = (*itr).GetString();
+        for(const auto& dataType: m_allDataTypes) {
+            if(s == dataType) {
+                foundConfigs.insert(dataType);
             }
         }
     }
