@@ -6,220 +6,6 @@
 
 using namespace systemspn;
 
-static std::string configureErrorParseJSON = QUOTE({
-    "exchanged_data" : {
-        "eee"
-    }
-});
-
-static std::string configureErrorRootNotObject = QUOTE(42);
-
-static std::string configureErrorExchanged_data = QUOTE({
-    "configureErrorExchanged_data": {         
-        "datapoints" : [          
-            {
-                "label":"TS-1",
-                "pivot_id":"M_2367_3_15_4",
-                "pivot_type":"SpsTyp",
-                "pivot_subtypes": [
-                    "prt.inf"
-                ],
-                "protocols":[
-                    {
-                        "name":"IEC104",
-                        "typeid":"M_ME_NC_1",
-                        "address":"3271612"
-                    }
-                ]
-            }
-        ]
-    }
-});
-
-static std::string configureErrorExchangedDataNotObject = QUOTE({
-    "exchanged_data" : [
-        42
-    ]
-});
-
-static std::string configureErrorDatapoint = QUOTE({
-    "exchanged_data": {         
-        "configureErrorDatapoint" : [          
-            {
-                "label":"TS-1",
-                "pivot_id":"M_2367_3_15_4",
-                "pivot_type":"SpsTyp",
-                "pivot_subtypes": [
-                    "prt.inf"
-                ],
-                "protocols":[
-                    {
-                        "name":"IEC104",
-                        "typeid":"M_ME_NC_1",
-                        "address":"3271612"
-                    }
-                ]
-            }
-        ]
-    }
-});
-
-static std::string configureErrorDatapointNotObject = QUOTE({
-    "exchanged_data": {         
-        "datapoints" : [          
-            42
-        ]
-    }
-});
-
-static std::string configureErrorType = QUOTE({
-    "exchanged_data": {         
-        "datapoints" : [          
-            {
-                "label":"TS-1",
-                "pivot_id":"M_2367_3_15_4",
-                "pivot_subtypes": [
-                    "prt.inf"
-                ],
-                "protocols":[
-                    {
-                        "name":"IEC104",
-                        "typeid":"M_ME_NC_1",
-                        "address":"3271612"
-                    }
-                ]
-            }
-        ]
-    }
-});
-
-static std::string configureErrorTypeMv = QUOTE({
-    "exchanged_data": {         
-        "datapoints" : [          
-            {
-                "label":"TS-1",
-                "pivot_id":"M_2367_3_15_4",
-                "pivot_type":"MvTyp",
-                "pivot_subtypes": [
-                    "prt.inf"
-                ],
-                "protocols":[
-                    {
-                        "name":"IEC104",
-                        "typeid":"M_ME_NC_1",
-                        "address":"3271612"
-                    }
-                ]
-            }
-        ]
-    }
-});
-
-static std::string configureErrorPivotID = QUOTE({
-    "exchanged_data": {         
-        "datapoints" : [          
-            {
-                "label":"TS-1",
-                "pivot_type":"SpsTyp",
-                "pivot_subtypes": [
-                    "prt.inf"
-                ],
-                "protocols":[
-                    {
-                        "name":"IEC104",
-                        "typeid":"M_ME_NC_1",
-                        "address":"3271612"
-                    }
-                ]
-            }
-        ]
-    }
-});
-
-static std::string configureErrorLabel = QUOTE({
-    "exchanged_data": {         
-        "datapoints" : [          
-            {
-                "pivot_id":"M_2367_3_15_4",
-                "pivot_type":"SpsTyp",
-                "pivot_subtypes": [
-                    "prt.inf"
-                ],
-                "protocols":[
-                    {
-                        "name":"IEC104",
-                        "typeid":"M_ME_NC_1",
-                        "address":"3271612"
-                    }
-                ]
-            }
-        ]
-    }
-});
-
-static std::string configureErrorSubtypes = QUOTE({
-    "exchanged_data": {         
-        "datapoints" : [          
-            {
-                "label":"TS-1",
-                "pivot_id":"M_2367_3_15_4",
-                "pivot_type":"SpsTyp",
-                "protocols":[
-                    {
-                        "name":"IEC104",
-                        "typeid":"M_ME_NC_1",
-                        "address":"3271612"
-                    }
-                ]
-            }
-        ]
-    }
-});
-
-static std::string configureErrorSubtypesWithUnknownSubtype = QUOTE({
-    "exchanged_data": {         
-        "datapoints" : [          
-            {
-                "label":"TS-1",
-                "pivot_id":"M_2367_3_15_4",
-                "pivot_type":"SpsTyp",
-                "pivot_subtypes": [
-                    "test"
-                ],
-                "protocols":[
-                    {
-                        "name":"IEC104",
-                        "typeid":"M_ME_NC_1",
-                        "address":"3271612"
-                    }
-                ]
-            }
-        ]
-    }
-});
-
-static std::string configureErrorSubtypesWithMissingCycle = QUOTE({
-    "exchanged_data": {         
-        "datapoints" : [          
-            {
-                "label":"TS-1",
-                "pivot_id":"M_2367_3_15_4",
-                "pivot_type":"SpsTyp",
-                "pivot_subtypes": [
-                    "acces"
-                ],
-                "protocols":[
-                    {
-                        "name":"IEC104",
-                        "typeid":"M_ME_NC_1",
-                        "address":"3271612"
-                    }
-                ]
-            }
-        ]
-    }
-});
-
 static std::string configureOKSps = QUOTE({
     "exchanged_data": {         
         "datapoints" : [          
@@ -346,7 +132,13 @@ std::map<std::string, std::string> TestPluginConfigure::expectedAssetNames = {
 
 TEST_F(TestPluginConfigure, ConfigureErrorParsingJSON) 
 {
-	filter->setJsonConfig(configureErrorParseJSON);
+	std::string configureErrorParseJSON = QUOTE({
+        "exchanged_data" : {
+            "eee"
+        }
+    });
+
+    filter->setJsonConfig(configureErrorParseJSON);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
@@ -358,7 +150,9 @@ TEST_F(TestPluginConfigure, ConfigureErrorParsingJSON)
 
 TEST_F(TestPluginConfigure, ConfigureErrorRootNotObject) 
 {
-	filter->setJsonConfig(configureErrorRootNotObject);
+	std::string configureErrorRootNotObject = QUOTE(42);
+
+    filter->setJsonConfig(configureErrorRootNotObject);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
@@ -368,9 +162,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorRootNotObject)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorExchanged_data) 
+TEST_F(TestPluginConfigure, ConfigureErrorNoExchangedData) 
 {
-	filter->setJsonConfig(configureErrorExchanged_data);
+	std::string configureErrorNoExchangedData = QUOTE({});
+
+    filter->setJsonConfig(configureErrorNoExchangedData);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
@@ -382,7 +178,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorExchanged_data)
 
 TEST_F(TestPluginConfigure, ConfigureErrorExchangedDataNotObject) 
 {
-	filter->setJsonConfig(configureErrorExchangedDataNotObject);
+	std::string configureErrorExchangedDataNotObject = QUOTE({
+        "exchanged_data" : 42
+    });
+
+    filter->setJsonConfig(configureErrorExchangedDataNotObject);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
@@ -392,9 +192,13 @@ TEST_F(TestPluginConfigure, ConfigureErrorExchangedDataNotObject)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorDatapoint) 
+TEST_F(TestPluginConfigure, ConfigureErrorNoDatapoints) 
 {
-	filter->setJsonConfig(configureErrorDatapoint);
+	std::string configureErrorNoDatapoints = QUOTE({
+        "exchanged_data": {}
+    });
+
+    filter->setJsonConfig(configureErrorNoDatapoints);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
@@ -404,9 +208,15 @@ TEST_F(TestPluginConfigure, ConfigureErrorDatapoint)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorDatapointNotObject) 
+TEST_F(TestPluginConfigure, ConfigureErrorDatapointsNotArray) 
 {
-	filter->setJsonConfig(configureErrorDatapointNotObject);
+	std::string configureErrorDatapointsNotArray = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : 42
+        }
+    });
+    
+    filter->setJsonConfig(configureErrorDatapointsNotArray);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
@@ -416,9 +226,17 @@ TEST_F(TestPluginConfigure, ConfigureErrorDatapointNotObject)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorType) 
+TEST_F(TestPluginConfigure, ConfigureErrorDatapointsNotContainsObject) 
 {
-	filter->setJsonConfig(configureErrorType);
+	std::string configureErrorDatapointsNotContainsObject = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                42
+            ]
+        }
+    });
+    
+    filter->setJsonConfig(configureErrorDatapointsNotContainsObject);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
@@ -428,9 +246,30 @@ TEST_F(TestPluginConfigure, ConfigureErrorType)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorTypeMv) 
+TEST_F(TestPluginConfigure, ConfigureErrorNoType) 
 {
-	filter->setJsonConfig(configureErrorTypeMv);
+	std::string configureErrorNoType = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                {
+                    "label":"TS-1",
+                    "pivot_id":"M_2367_3_15_4",
+                    "pivot_subtypes": [
+                        "prt.inf"
+                    ],
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+    
+    filter->setJsonConfig(configureErrorNoType);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
@@ -440,9 +279,31 @@ TEST_F(TestPluginConfigure, ConfigureErrorTypeMv)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorPivotID) 
+TEST_F(TestPluginConfigure, ConfigureErrorTypeNotString) 
 {
-	filter->setJsonConfig(configureErrorPivotID);
+	std::string configureErrorTypeNotString = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                {
+                    "label":"TS-1",
+                    "pivot_id":"M_2367_3_15_4",
+                    "pivot_type": 42,
+                    "pivot_subtypes": [
+                        "prt.inf"
+                    ],
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    filter->setJsonConfig(configureErrorTypeNotString);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
@@ -452,9 +313,31 @@ TEST_F(TestPluginConfigure, ConfigureErrorPivotID)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorLabel) 
+TEST_F(TestPluginConfigure, ConfigureErrorInvalidType) 
 {
-	filter->setJsonConfig(configureErrorLabel);
+	std::string configureErrorInvalidType = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                {
+                    "label":"TS-1",
+                    "pivot_id":"M_2367_3_15_4",
+                    "pivot_type":"MvTyp",
+                    "pivot_subtypes": [
+                        "prt.inf"
+                    ],
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    filter->setJsonConfig(configureErrorInvalidType);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
@@ -464,9 +347,228 @@ TEST_F(TestPluginConfigure, ConfigureErrorLabel)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorSubtypes) 
+TEST_F(TestPluginConfigure, ConfigureErrorNoPivotID) 
 {
-	filter->setJsonConfig(configureErrorSubtypes);
+	std::string configureErrorNoPivotID = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                {
+                    "label":"TS-1",
+                    "pivot_type":"SpsTyp",
+                    "pivot_subtypes": [
+                        "prt.inf"
+                    ],
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    filter->setJsonConfig(configureErrorNoPivotID);
+    auto dataTypes = filter->getConfigPlugin().getDataTypes();
+    auto dataSystem = filter->getConfigPlugin().getDataSystem();
+    ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
+    for(const auto& dataType : dataTypes) {
+        ASSERT_EQ(dataSystem.count(dataType), 1) << "Missing data type " << dataType;
+        ASSERT_EQ(dataSystem[dataType].size(), 0) << "No " << dataType << " data should be stored";
+    }
+}
+
+TEST_F(TestPluginConfigure, ConfigureErrorPivotIDNotString) 
+{
+	std::string configureErrorPivotIDNotString = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                {
+                    "label":"TS-1",
+                    "pivot_id": 42,
+                    "pivot_type":"SpsTyp",
+                    "pivot_subtypes": [
+                        "prt.inf"
+                    ],
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    filter->setJsonConfig(configureErrorPivotIDNotString);
+    auto dataTypes = filter->getConfigPlugin().getDataTypes();
+    auto dataSystem = filter->getConfigPlugin().getDataSystem();
+    ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
+    for(const auto& dataType : dataTypes) {
+        ASSERT_EQ(dataSystem.count(dataType), 1) << "Missing data type " << dataType;
+        ASSERT_EQ(dataSystem[dataType].size(), 0) << "No " << dataType << " data should be stored";
+    }
+}
+
+TEST_F(TestPluginConfigure, ConfigureErrorNoLabel) 
+{
+	std::string configureErrorNoLabel = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                {
+                    "pivot_id":"M_2367_3_15_4",
+                    "pivot_type":"SpsTyp",
+                    "pivot_subtypes": [
+                        "prt.inf"
+                    ],
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+    
+    filter->setJsonConfig(configureErrorNoLabel);
+    auto dataTypes = filter->getConfigPlugin().getDataTypes();
+    auto dataSystem = filter->getConfigPlugin().getDataSystem();
+    ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
+    for(const auto& dataType : dataTypes) {
+        ASSERT_EQ(dataSystem.count(dataType), 1) << "Missing data type " << dataType;
+        ASSERT_EQ(dataSystem[dataType].size(), 0) << "No " << dataType << " data should be stored";
+    }
+}
+
+TEST_F(TestPluginConfigure, ConfigureErrorLabelNotString) 
+{
+	std::string configureErrorLabelNotString = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                {
+                    "label": 42,
+                    "pivot_id":"M_2367_3_15_4",
+                    "pivot_type":"SpsTyp",
+                    "pivot_subtypes": [
+                        "prt.inf"
+                    ],
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    filter->setJsonConfig(configureErrorLabelNotString);
+    auto dataTypes = filter->getConfigPlugin().getDataTypes();
+    auto dataSystem = filter->getConfigPlugin().getDataSystem();
+    ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
+    for(const auto& dataType : dataTypes) {
+        ASSERT_EQ(dataSystem.count(dataType), 1) << "Missing data type " << dataType;
+        ASSERT_EQ(dataSystem[dataType].size(), 0) << "No " << dataType << " data should be stored";
+    }
+}
+
+TEST_F(TestPluginConfigure, ConfigureErrorNoSubtypes) 
+{
+	std::string configureErrorNoSubtypes = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                {
+                    "label":"TS-1",
+                    "pivot_id":"M_2367_3_15_4",
+                    "pivot_type":"SpsTyp",
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    filter->setJsonConfig(configureErrorNoSubtypes);
+    auto dataTypes = filter->getConfigPlugin().getDataTypes();
+    auto dataSystem = filter->getConfigPlugin().getDataSystem();
+    ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
+    for(const auto& dataType : dataTypes) {
+        ASSERT_EQ(dataSystem.count(dataType), 1) << "Missing data type " << dataType;
+        ASSERT_EQ(dataSystem[dataType].size(), 0) << "No " << dataType << " data should be stored";
+    }
+}
+
+TEST_F(TestPluginConfigure, ConfigureErrorSubtypesNotArray) 
+{
+	std::string configureErrorSubtypesNotArray = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                {
+                    "label":"TS-1",
+                    "pivot_id":"M_2367_3_15_4",
+                    "pivot_type":"SpsTyp",
+                    "pivot_subtypes": 42,
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    filter->setJsonConfig(configureErrorSubtypesNotArray);
+    auto dataTypes = filter->getConfigPlugin().getDataTypes();
+    auto dataSystem = filter->getConfigPlugin().getDataSystem();
+    ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
+    for(const auto& dataType : dataTypes) {
+        ASSERT_EQ(dataSystem.count(dataType), 1) << "Missing data type " << dataType;
+        ASSERT_EQ(dataSystem[dataType].size(), 0) << "No " << dataType << " data should be stored";
+    }
+}
+
+TEST_F(TestPluginConfigure, ConfigureErrorSubtypesNotContainString) 
+{
+	std::string configureErrorSubtypesNotContainString = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                {
+                    "label":"TS-1",
+                    "pivot_id":"M_2367_3_15_4",
+                    "pivot_type":"SpsTyp",
+                    "pivot_subtypes": [
+                        42
+                    ],
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    filter->setJsonConfig(configureErrorSubtypesNotContainString);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
@@ -478,7 +580,29 @@ TEST_F(TestPluginConfigure, ConfigureErrorSubtypes)
 
 TEST_F(TestPluginConfigure, ConfigureErrorSubtypesWithUnknownSubtype) 
 {
-	filter->setJsonConfig(configureErrorSubtypesWithUnknownSubtype);
+	std::string configureErrorSubtypesWithUnknownSubtype = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                {
+                    "label":"TS-1",
+                    "pivot_id":"M_2367_3_15_4",
+                    "pivot_type":"SpsTyp",
+                    "pivot_subtypes": [
+                        "test"
+                    ],
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+
+    filter->setJsonConfig(configureErrorSubtypesWithUnknownSubtype);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
@@ -490,7 +614,64 @@ TEST_F(TestPluginConfigure, ConfigureErrorSubtypesWithUnknownSubtype)
 
 TEST_F(TestPluginConfigure, ConfigureErrorSubtypesWithMissingCycle) 
 {
-	filter->setJsonConfig(configureErrorSubtypesWithMissingCycle);
+	std::string configureErrorSubtypesWithMissingCycle = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                {
+                    "label":"TS-1",
+                    "pivot_id":"M_2367_3_15_4",
+                    "pivot_type":"SpsTyp",
+                    "pivot_subtypes": [
+                        "acces"
+                    ],
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+    
+    filter->setJsonConfig(configureErrorSubtypesWithMissingCycle);
+    auto dataTypes = filter->getConfigPlugin().getDataTypes();
+    auto dataSystem = filter->getConfigPlugin().getDataSystem();
+    ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
+    for(const auto& dataType : dataTypes) {
+        ASSERT_EQ(dataSystem.count(dataType), 1) << "Missing data type " << dataType;
+        ASSERT_EQ(dataSystem[dataType].size(), 0) << "No " << dataType << " data should be stored";
+    }
+}
+
+TEST_F(TestPluginConfigure, ConfigureErrorCycleNotInt) 
+{
+	std::string configureErrorCycleNotInt = QUOTE({
+        "exchanged_data": {         
+            "datapoints" : [          
+                {
+                    "label":"TS-1",
+                    "pivot_id":"M_2367_3_15_4",
+                    "pivot_type":"SpsTyp",
+                    "pivot_subtypes": [
+                        "acces"
+                    ],
+                    "ts_syst_cycle":"zzz",
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+    
+    filter->setJsonConfig(configureErrorCycleNotInt);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
@@ -570,7 +751,7 @@ TEST_F(TestPluginConfigure, ConfigureOKDps)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorInvalidDataType) 
+TEST_F(TestPluginConfigure, HasDataForTypeInvalidType) 
 {
 	filter->setJsonConfig(configureOKSps);
     ASSERT_FALSE(filter->getConfigPlugin().hasDataForType("invalid_type", "M_2367_3_15_4"));

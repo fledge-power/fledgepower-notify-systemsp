@@ -45,6 +45,7 @@ public:
 
     void importExchangedData(const std::string & exchangeConfig);
     bool hasDataForType(const std::string& dataType, const std::string& pivotId) const;
+    void addDataInfo(const std::string& dataType, std::shared_ptr<DataInfo> dataInfo);
 
     const std::map<std::string, std::vector<std::shared_ptr<DataInfo>>>& getDataSystem() const { return m_dataSystem; }
     const std::vector<std::string>& getDataTypes() const { return m_allDataTypes; }

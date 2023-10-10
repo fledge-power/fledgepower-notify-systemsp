@@ -134,7 +134,7 @@ protected:
         ASSERT_NO_THROW(plugin_registerIngest(reinterpret_cast<PLUGIN_HANDLE*>(filter), (void*)ingestCallback, nullptr));
         
         ASSERT_NO_THROW(plugin_reconfigure(reinterpret_cast<PLUGIN_HANDLE*>(filter), configure));
-        ASSERT_EQ(filter->isEnabled(), true);
+        ASSERT_TRUE(filter->isEnabled());
 
         // Wait 100 ms to make sure the cyclic TS from the initialization of the plugin do not interfere with the tests
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -432,7 +432,7 @@ TEST_F(TestSystemSp, CyclicAccessMessages)
     
     debug_print("Reconfigure plugin");
     ASSERT_NO_THROW(plugin_reconfigure(reinterpret_cast<PLUGIN_HANDLE*>(filter), customConfig));
-    ASSERT_EQ(filter->isEnabled(), true);
+    ASSERT_TRUE(filter->isEnabled());
     // All messages are sent immediately at startup (but sent from threads so still use wait)
     waitUntil(ingestCallbackCalled, 2, 100);
     ASSERT_EQ(ingestCallbackCalled, 2);
@@ -576,7 +576,7 @@ TEST_F(TestSystemSp, CyclicAccessMessages)
 
     debug_print("Load empty config");
     ASSERT_NO_THROW(plugin_reconfigure(reinterpret_cast<PLUGIN_HANDLE*>(filter), emptyConfig));
-    ASSERT_EQ(filter->isEnabled(), true);
+    ASSERT_TRUE(filter->isEnabled());
     // Validate that no message is sent any more after a new config was loaded
     std::this_thread::sleep_for(std::chrono::milliseconds(4000));
     ASSERT_EQ(ingestCallbackCalled, 0);
@@ -630,7 +630,7 @@ TEST_F(TestSystemSp, ConnectionLossMessages)
     
     debug_print("Reconfigure plugin");
     ASSERT_NO_THROW(plugin_reconfigure(reinterpret_cast<PLUGIN_HANDLE*>(filter), customConfig));
-    ASSERT_EQ(filter->isEnabled(), true);
+    ASSERT_TRUE(filter->isEnabled());
 
     debug_print("Testing invalid notifications...");
     // Send notification with invalid json
@@ -846,7 +846,7 @@ TEST_F(TestSystemSp, CyclicAndConnectionLossMessages)
 
     debug_print("Reconfigure plugin");
     ASSERT_NO_THROW(plugin_reconfigure(reinterpret_cast<PLUGIN_HANDLE*>(filter), customConfig));
-    ASSERT_EQ(filter->isEnabled(), true);
+    ASSERT_TRUE(filter->isEnabled());
 
     // All messages are sent immediately at startup (but sent from threads so still use wait)
     waitUntil(ingestCallbackCalled, 2, 100);
@@ -973,7 +973,7 @@ TEST_F(TestSystemSp, CyclicAndConnectionLossMessages)
 
     debug_print("Load empty config");
     ASSERT_NO_THROW(plugin_reconfigure(reinterpret_cast<PLUGIN_HANDLE*>(filter), emptyConfig));
-    ASSERT_EQ(filter->isEnabled(), true);
+    ASSERT_TRUE(filter->isEnabled());
     // Validate that no message is sent any more after a new config was loaded
     std::this_thread::sleep_for(std::chrono::milliseconds(4000));
     ASSERT_EQ(ingestCallbackCalled, 0);
@@ -1028,7 +1028,7 @@ TEST_F(TestSystemSp, PluginDisabled)
 
     debug_print("Reconfigure plugin");
     ASSERT_NO_THROW(plugin_reconfigure(reinterpret_cast<PLUGIN_HANDLE*>(filter), customConfig));
-    ASSERT_EQ(filter->isEnabled(), false);
+    ASSERT_FALSE(filter->isEnabled());
 
     // Nothing is sent when plugin disabled
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -1047,5 +1047,84 @@ TEST_F(TestSystemSp, PluginDisabled)
     // Nothing received 3 seconds after startup
     debug_print("Waiting for ignored cyclic call...");
     std::this_thread::sleep_for(std::chrono::milliseconds(3100));
+    ASSERT_EQ(ingestCallbackCalled, 0);
+}
+
+
+TEST_F(TestSystemSp, GetMessageTemplate) 
+{
+    const std::string defaultMessageTemplate = QUOTE({
+        "PIVOT": {
+            "GTIS": {
+                "Identifier": "<pivot_id>",
+                "Cause": {
+                    "stVal": 3
+                },
+                "<pivot_type>": {
+                    "stVal": <value>,
+                    "q": {
+                        "Source": "substituted"
+                    },
+                    "t": {
+                        "SecondSinceEpoch": <timestamp_sec>,
+                        "FractionOfSecond": <timestamp_sub_sec>
+                    }
+                },
+                "TmOrg": {
+                    "stVal": "substituted"
+                }
+            }
+        }
+    });
+    ASSERT_STREQ(filter->getMessageTemplate("invalid").c_str(), "");
+    ASSERT_STREQ(filter->getMessageTemplate("acces").c_str(), defaultMessageTemplate.c_str());
+    ASSERT_STREQ(filter->getMessageTemplate("prt.inf").c_str(), defaultMessageTemplate.c_str());
+}
+
+TEST_F(TestSystemSp, InvalidPivotType) 
+{
+    // Load a config with no TS
+    static std::string customConfig = QUOTE({
+        "enable" :{
+            "value": "true"
+        },
+        "exchanged_data": {
+            "value" : {
+                "exchanged_data": {
+                    "datapoints" : []
+                }
+            }
+        }
+    });
+
+    debug_print("Reconfigure plugin");
+    ASSERT_NO_THROW(plugin_reconfigure(reinterpret_cast<PLUGIN_HANDLE*>(filter), customConfig));
+    ASSERT_TRUE(filter->isEnabled());
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    ASSERT_EQ(ingestCallbackCalled, 0);
+
+    // Manually add erroneous configuration for a TS with "acces" and "prt.inf" and an invalid pivot type
+    // During a regular config import, this is prevented by ConfigPlugin::m_importDatapoint()
+    // as messages with unexpected pivot type are ignored by it
+    filter->getConfigPlugin().addDataInfo("acces", std::make_shared<CyclicDataInfo>("invalid", "invalid", "invalid", 1));
+    filter->getConfigPlugin().addDataInfo("prt.inf", std::make_shared<DataInfo>("invalid", "invalid", "invalid"));
+
+    // Restart the cycles to take manual config into account
+    debug_print("Restart cycles");
+    ASSERT_NO_THROW(filter->stopCycles());
+    ASSERT_NO_THROW(filter->startCycles());
+    
+    // Let the cycle loop a few times and check that no message was sent
+    debug_print("Wait for cycles execution...");
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    ASSERT_EQ(ingestCallbackCalled, 0);
+
+    // Send notification with reason "connection lost" (ignored as invaid pivot type)
+    std::string notifConnectionLost = QUOTE({
+        "asset": "prt.inf",
+        "reason": "connection lost"
+    });
+    ASSERT_FALSE(plugin_deliver(reinterpret_cast<PLUGIN_HANDLE*>(filter), "dummyDeliveryName", "dummyNotificationName",
+                notifConnectionLost, "dummyMessage"));
     ASSERT_EQ(ingestCallbackCalled, 0);
 }

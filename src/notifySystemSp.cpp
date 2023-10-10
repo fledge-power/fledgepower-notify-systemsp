@@ -306,28 +306,31 @@ bool NotifySystemSp::notify(const std::string& /*notificationName*/, const std::
         return false;
     }
 
-    sendConnectionLossSP(connected);
-    return true;
+    return sendConnectionLossSP(connected);
 }
 
 /**
  * Function sending all the Connection Loss Status Point Readings
  * 
  * @param connected True if the status to send represent a connection fully established, false for a connection loss
+ * @return True if all messages were sent successfully, else false
  */
-void NotifySystemSp::sendConnectionLossSP(bool connected) {
+bool NotifySystemSp::sendConnectionLossSP(bool connected) {
     std::string messageTemplate = getMessageTemplate("prt.inf");
     long currentTimeMs = UtilityPivot::getCurrentTimestampMs();
     const auto& dataSystem = m_configPlugin.getDataSystem();
+    bool success = true;
     for(const auto& dataInfo : dataSystem.at("prt.inf")) {
         std::string jsonReading = fillTemplate(messageTemplate, dataInfo->pivotId, dataInfo->pivotType,
                                                currentTimeMs, connected);
         if (jsonReading.size() == 0) {
-            return;
+            success = false;
+            continue;
         }
         // Send a reading with data from the template
         sendReading(dataInfo->assetName, jsonReading);
     }
+    return success;
 }
 
 /**

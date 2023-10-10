@@ -102,10 +102,12 @@ void ConfigPlugin::m_importDatapoint(const rapidjson::Value& datapoint) {
     auto subtypes = datapoint[ConstantsSystem::JsonPivotSubtypes].GetArray();
 
     for (rapidjson::Value::ConstValueIterator itr = subtypes.Begin(); itr != subtypes.End(); ++itr) {
-        std::string s = (*itr).GetString();
-        for(const auto& dataType: m_allDataTypes) {
-            if(s == dataType) {
-                foundConfigs.insert(dataType);
+        if ((*itr).IsString()) {
+            std::string s = (*itr).GetString();
+            for(const auto& dataType: m_allDataTypes) {
+                if(s == dataType) {
+                    foundConfigs.insert(dataType);
+                }
             }
         }
     }
@@ -116,14 +118,14 @@ void ConfigPlugin::m_importDatapoint(const rapidjson::Value& datapoint) {
         }
         else {
             int cycle_s = datapoint[ConstantsSystem::JsonTsSystCycle].GetInt();
-            m_dataSystem["acces"].push_back(std::make_shared<CyclicDataInfo>(pivot_id, type, label, cycle_s));
+            addDataInfo("acces", std::make_shared<CyclicDataInfo>(pivot_id, type, label, cycle_s));
             UtilityPivot::log_debug("%s Configuration access on %s : [%s, %s, %d]",
                                     beforeLog.c_str(), label.c_str(), pivot_id.c_str(), type.c_str(), cycle_s);
         }
     }
     
     if (foundConfigs.count("prt.inf") > 0) {
-        m_dataSystem["prt.inf"].push_back(std::make_shared<DataInfo>(pivot_id, type, label));
+        addDataInfo("prt.inf", std::make_shared<DataInfo>(pivot_id, type, label));
         UtilityPivot::log_debug("%s Configuration prt.inf on %s : [%s, %s]",
                                     beforeLog.c_str(), label.c_str(), pivot_id.c_str(), type.c_str());
     }
@@ -145,6 +147,16 @@ bool ConfigPlugin::hasDataForType(const std::string& dataType, const std::string
     const auto& dataSystem = m_dataSystem.at(dataType);
     return std::find_if(dataSystem.begin(), dataSystem.end(),
         [&pivotId](std::shared_ptr<DataInfo> di){ return di->pivotId == pivotId; }) != dataSystem.end();
+}
+
+/**
+ * Adds information about a TI that can be sent by the plugin
+ * 
+ * @param dataType Type of data to add
+ * @param dataInfo Information about that TI
+*/
+void ConfigPlugin::addDataInfo(const std::string& dataType, std::shared_ptr<DataInfo> dataInfo) {
+    m_dataSystem[dataType].push_back(dataInfo);
 }
 
 /**

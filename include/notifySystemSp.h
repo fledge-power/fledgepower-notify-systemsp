@@ -32,7 +32,7 @@ public:
 
     void reconfigure(const ConfigCategory& config);
     void setJsonConfig(const std::string& jsonExchanged);
-    const ConfigPlugin& getConfigPlugin() const { return m_configPlugin; }
+    ConfigPlugin& getConfigPlugin() { return m_configPlugin; }
     bool isEnabled() const { return m_enabled; } 
 
     void registerIngest(FuncPtr ingest, void *data);
@@ -47,7 +47,7 @@ public:
                              const std::string& pivotType, long timestampMs, bool on = true) const;
     void sendReading(const std::string& assetName, const std::string& jsonReading);
     bool notify(const std::string& notificationName, const std::string& triggerReason, const std::string& message);
-    void sendConnectionLossSP(bool connected);
+    bool sendConnectionLossSP(bool connected);
 
 private:
     void*	                 m_data = nullptr;
