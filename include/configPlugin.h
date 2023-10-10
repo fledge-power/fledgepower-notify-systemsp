@@ -16,6 +16,8 @@
 #include <memory>
 #include <map>
 
+#include <rapidjson/document.h>
+
 namespace systemspn {
 
 // Generic data info struct

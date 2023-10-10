@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <set>
 
-#include <rapidjson/document.h>
-
 #include "configPlugin.h"
 #include "constantsSystem.h"
 #include "utilityPivot.h"
