@@ -14,6 +14,10 @@ project(systemspn)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 if (${CMAKE_BUILD_TYPE} STREQUAL Coverage)
   message("Coverage is going to be generated")
   enable_testing()
@@ -40,7 +44,7 @@ if (${CMAKE_BUILD_TYPE} STREQUAL Coverage)
   message(STATUS "Using Fledge dev package includes2 " ${FLEDGE_INCLUDE})
 else()
   message("Build without Coverage") 
-  set(CMAKE_CXX_FLAGS "-std=c++11 -O3")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 endif()
 
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb")
