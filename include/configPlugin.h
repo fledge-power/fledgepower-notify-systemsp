@@ -9,7 +9,7 @@
  * Released under the Apache 2.0 Licence
  *
  * Author: Yannick Marchetaux
- * 
+ *
  */
 #include <vector>
 #include <string>
@@ -25,9 +25,12 @@ struct DataInfo {
     std::string pivotId;
     std::string pivotType;
     std::string assetName;
+    bool isTransientWarning ; // Flag to indicate if a transient warning was issued
 
     DataInfo(const std::string& pivotIdInit, const std::string& pivotTypeInit, const std::string& assetNameInit):
-        pivotId(pivotIdInit), pivotType(pivotTypeInit), assetName(assetNameInit) {}
+        pivotId(pivotIdInit), pivotType(pivotTypeInit), assetName(assetNameInit), isTransientWarning(false) {}
+    DataInfo(const std::string& pivotIdInit, const std::string& pivotTypeInit, const std::string& assetNameInit, const bool& isTransientWarningInit):
+        pivotId(pivotIdInit), pivotType(pivotTypeInit), assetName(assetNameInit), isTransientWarning(isTransientWarningInit) {}
     virtual ~DataInfo() = default; // Needed for dynamic_cast
 };
 
@@ -42,7 +45,7 @@ struct CyclicDataInfo : public DataInfo {
 };
 
 class ConfigPlugin {
-public:  
+public:
     ConfigPlugin();
 
     void importExchangedData(const std::string & exchangeConfig);
@@ -51,12 +54,12 @@ public:
 
     const std::map<std::string, std::vector<std::shared_ptr<DataInfo>>>& getDataSystem() const { return m_dataSystem; }
     const std::vector<std::string>& getDataTypes() const { return m_allDataTypes; }
-    
+
 private:
     void m_reset();
     void m_importDatapoint(const rapidjson::Value& datapoint);
 
-    std::vector<std::string> m_allDataTypes{"acces", "prt.inf"};
+    std::vector<std::string> m_allDataTypes{"acces",  "prt.inf", "transient"};
     std::map<std::string, std::vector<std::shared_ptr<DataInfo>>> m_dataSystem;
 };
 

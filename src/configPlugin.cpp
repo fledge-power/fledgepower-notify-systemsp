@@ -19,11 +19,11 @@ ConfigPlugin::ConfigPlugin() {
 /**
  * Import data in the form of Exchanged_data
  * The data is saved in a map m_exchangeDefinitions
- * 
- * @param exchangeConfig : configuration Exchanged_data as a string 
+ *
+ * @param exchangeConfig : configuration Exchanged_data as a string
 */
 void ConfigPlugin::importExchangedData(const std::string & exchangeConfig) {
-    
+
     std::string beforeLog = ConstantsSystem::NamePlugin + " - ConfigPlugin::importExchangedData :";
     rapidjson::Document document;
 
@@ -58,7 +58,7 @@ void ConfigPlugin::importExchangedData(const std::string & exchangeConfig) {
 
 /**
  * Import data from a single datapoint of exchanged data
- * 
+ *
  * @param datapoint : datapoint to parse and import
 */
 void ConfigPlugin::m_importDatapoint(const rapidjson::Value& datapoint) {
@@ -67,7 +67,7 @@ void ConfigPlugin::m_importDatapoint(const rapidjson::Value& datapoint) {
         UtilityPivot::log_error("%s datapoint is not an object", beforeLog.c_str());
         return;
     }
-    
+
     if (!datapoint.HasMember(ConstantsSystem::JsonPivotType) || !datapoint[ConstantsSystem::JsonPivotType].IsString()) {
         UtilityPivot::log_error("%s pivot_type not found in datapoint or is not a string", beforeLog.c_str());
         return;
@@ -122,17 +122,24 @@ void ConfigPlugin::m_importDatapoint(const rapidjson::Value& datapoint) {
                                     beforeLog.c_str(), label.c_str(), pivot_id.c_str(), type.c_str(), cycle_s);
         }
     }
-    
+
     if (foundConfigs.count("prt.inf") > 0) {
-        addDataInfo("prt.inf", std::make_shared<DataInfo>(pivot_id, type, label));
-        UtilityPivot::log_debug("%s Configuration prt.inf on %s : [%s, %s]",
+        if (foundConfigs.count("transient") > 0){
+            addDataInfo("prt.inf", std::make_shared<DataInfo>(pivot_id, type, label, false));
+            UtilityPivot::log_debug("%s Configuration prt.inf on %s : [%s, %s]",
                                     beforeLog.c_str(), label.c_str(), pivot_id.c_str(), type.c_str());
+        }
+        else {
+            addDataInfo("prt.inf", std::make_shared<DataInfo>(pivot_id, type, label, true));
+            UtilityPivot::log_warn("%s Configuration prt.inf on %s : no transient subtype found, prt.inf is always transient",
+                                    beforeLog.c_str(), label.c_str());
+        }
     }
 }
 
 /**
  * Tells if there is currently a data info stored for the given type and pivot ID
- * 
+ *
  * @param dataType Type of data to look for
  * @param pivotId Pivot ID to look for
  * @return True if a result is found, else false
@@ -150,7 +157,7 @@ bool ConfigPlugin::hasDataForType(const std::string& dataType, const std::string
 
 /**
  * Adds information about a TI that can be sent by the plugin
- * 
+ *
  * @param dataType Type of data to add
  * @param dataInfo Information about that TI
 */

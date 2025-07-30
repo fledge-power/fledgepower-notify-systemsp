@@ -9,7 +9,7 @@
  * Released under the Apache 2.0 Licence
  *
  * Author: Yannick Marchetaux
- * 
+ *
  */
 
 #include <datapoint_utility.h>
@@ -26,14 +26,14 @@ using FuncPtr = void (*)(void *, void *);
 namespace systemspn {
 
 class NotifySystemSp {
-public:  
+public:
     NotifySystemSp() = default;
     ~NotifySystemSp();
 
     void reconfigure(const ConfigCategory& config);
     void setJsonConfig(const std::string& jsonExchanged);
     ConfigPlugin& getConfigPlugin() { return m_configPlugin; }
-    bool isEnabled() const { return m_enabled; } 
+    bool isEnabled() const { return m_enabled; }
 
     void registerIngest(FuncPtr ingest, void *data);
     void ingest(Reading &reading);
@@ -47,7 +47,7 @@ public:
                              const std::string& pivotType, long timestampMs, bool on = true) const;
     void sendReading(const std::string& assetName, const std::string& jsonReading);
     bool notify(const std::string& notificationName, const std::string& triggerReason, const std::string& message);
-    bool sendConnectionLossSP(bool connected);
+    bool sendPrtInfSP (bool value);
 
 private:
     void*	                 m_data = nullptr;
