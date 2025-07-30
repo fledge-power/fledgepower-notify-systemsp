@@ -7,8 +7,8 @@
 using namespace systemspn;
 
 static std::string configureOKSps = QUOTE({
-    "exchanged_data": {         
-        "datapoints" : [          
+    "exchanged_data": {
+        "datapoints" : [
             {
                 "label":"TS-1",
                 "pivot_id":"M_2367_3_15_4",
@@ -30,7 +30,8 @@ static std::string configureOKSps = QUOTE({
                 "pivot_id":"M_2367_3_15_5",
                 "pivot_type":"SpsTyp",
                 "pivot_subtypes": [
-                    "prt.inf"
+                    "prt.inf",
+                    "transient"
                 ],
                 "protocols":[
                     {
@@ -45,8 +46,8 @@ static std::string configureOKSps = QUOTE({
 });
 
 static std::string configureOKDps = QUOTE({
-    "exchanged_data": {         
-        "datapoints" : [          
+    "exchanged_data": {
+        "datapoints" : [
             {
                 "label":"TS-1",
                 "pivot_id":"M_2367_3_15_4",
@@ -99,10 +100,10 @@ protected:
     {
         PLUGIN_INFORMATION *info = plugin_info();
 		ConfigCategory *config =  new ConfigCategory("systemsp", info->config);
-		ASSERT_NE(config, nullptr);		
+		ASSERT_NE(config, nullptr);
 		config->setItemsValueFromDefault();
 		config->setValue("enable", "true");
-		
+
 		PLUGIN_HANDLE handle = nullptr;
         ASSERT_NO_THROW(handle = plugin_init(config));
 		filter = static_cast<NotifySystemSp *>(handle);
@@ -115,7 +116,7 @@ protected:
         if (filter) {
             ASSERT_NO_THROW(plugin_shutdown(reinterpret_cast<PLUGIN_HANDLE*>(filter)));
         }
-    } 
+    }
 
     static std::map<std::string, std::string> expectedPivotIds;
     static std::map<std::string, std::string> expectedAssetNames;
@@ -123,14 +124,16 @@ protected:
 
 std::map<std::string, std::string> TestPluginConfigure::expectedPivotIds = {
     {"acces", "M_2367_3_15_4"},
-    {"prt.inf", "M_2367_3_15_5"}
+    {"prt.inf", "M_2367_3_15_5"},
+    {"transient", "M_2367_3_15_5"}
 };
 std::map<std::string, std::string> TestPluginConfigure::expectedAssetNames = {
     {"acces", "TS-1"},
-    {"prt.inf", "TS-2"}
+    {"prt.inf", "TS-2"},
+    {"transient", "TS-2"}
 };
 
-TEST_F(TestPluginConfigure, ConfigureErrorParsingJSON) 
+TEST_F(TestPluginConfigure, ConfigureErrorParsingJSON)
 {
 	std::string configureErrorParseJSON = QUOTE({
         "exchanged_data" : {
@@ -148,7 +151,7 @@ TEST_F(TestPluginConfigure, ConfigureErrorParsingJSON)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorRootNotObject) 
+TEST_F(TestPluginConfigure, ConfigureErrorRootNotObject)
 {
 	std::string configureErrorRootNotObject = QUOTE(42);
 
@@ -162,7 +165,7 @@ TEST_F(TestPluginConfigure, ConfigureErrorRootNotObject)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorNoExchangedData) 
+TEST_F(TestPluginConfigure, ConfigureErrorNoExchangedData)
 {
 	std::string configureErrorNoExchangedData = QUOTE({});
 
@@ -176,7 +179,7 @@ TEST_F(TestPluginConfigure, ConfigureErrorNoExchangedData)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorExchangedDataNotObject) 
+TEST_F(TestPluginConfigure, ConfigureErrorExchangedDataNotObject)
 {
 	std::string configureErrorExchangedDataNotObject = QUOTE({
         "exchanged_data" : 42
@@ -192,7 +195,7 @@ TEST_F(TestPluginConfigure, ConfigureErrorExchangedDataNotObject)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorNoDatapoints) 
+TEST_F(TestPluginConfigure, ConfigureErrorNoDatapoints)
 {
 	std::string configureErrorNoDatapoints = QUOTE({
         "exchanged_data": {}
@@ -208,14 +211,14 @@ TEST_F(TestPluginConfigure, ConfigureErrorNoDatapoints)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorDatapointsNotArray) 
+TEST_F(TestPluginConfigure, ConfigureErrorDatapointsNotArray)
 {
 	std::string configureErrorDatapointsNotArray = QUOTE({
-        "exchanged_data": {         
+        "exchanged_data": {
             "datapoints" : 42
         }
     });
-    
+
     filter->setJsonConfig(configureErrorDatapointsNotArray);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
@@ -226,16 +229,16 @@ TEST_F(TestPluginConfigure, ConfigureErrorDatapointsNotArray)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorDatapointsNotContainsObject) 
+TEST_F(TestPluginConfigure, ConfigureErrorDatapointsNotContainsObject)
 {
 	std::string configureErrorDatapointsNotContainsObject = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 42
             ]
         }
     });
-    
+
     filter->setJsonConfig(configureErrorDatapointsNotContainsObject);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
@@ -246,11 +249,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorDatapointsNotContainsObject)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorNoType) 
+TEST_F(TestPluginConfigure, ConfigureErrorNoType)
 {
 	std::string configureErrorNoType = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 {
                     "label":"TS-1",
                     "pivot_id":"M_2367_3_15_4",
@@ -268,7 +271,7 @@ TEST_F(TestPluginConfigure, ConfigureErrorNoType)
             ]
         }
     });
-    
+
     filter->setJsonConfig(configureErrorNoType);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
@@ -279,11 +282,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorNoType)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorTypeNotString) 
+TEST_F(TestPluginConfigure, ConfigureErrorTypeNotString)
 {
 	std::string configureErrorTypeNotString = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 {
                     "label":"TS-1",
                     "pivot_id":"M_2367_3_15_4",
@@ -313,11 +316,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorTypeNotString)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorInvalidType) 
+TEST_F(TestPluginConfigure, ConfigureErrorInvalidType)
 {
 	std::string configureErrorInvalidType = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 {
                     "label":"TS-1",
                     "pivot_id":"M_2367_3_15_4",
@@ -347,11 +350,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorInvalidType)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorNoPivotID) 
+TEST_F(TestPluginConfigure, ConfigureErrorNoPivotID)
 {
 	std::string configureErrorNoPivotID = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 {
                     "label":"TS-1",
                     "pivot_type":"SpsTyp",
@@ -380,11 +383,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorNoPivotID)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorPivotIDNotString) 
+TEST_F(TestPluginConfigure, ConfigureErrorPivotIDNotString)
 {
 	std::string configureErrorPivotIDNotString = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 {
                     "label":"TS-1",
                     "pivot_id": 42,
@@ -414,11 +417,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorPivotIDNotString)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorNoLabel) 
+TEST_F(TestPluginConfigure, ConfigureErrorNoLabel)
 {
 	std::string configureErrorNoLabel = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 {
                     "pivot_id":"M_2367_3_15_4",
                     "pivot_type":"SpsTyp",
@@ -436,7 +439,7 @@ TEST_F(TestPluginConfigure, ConfigureErrorNoLabel)
             ]
         }
     });
-    
+
     filter->setJsonConfig(configureErrorNoLabel);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
@@ -447,11 +450,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorNoLabel)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorLabelNotString) 
+TEST_F(TestPluginConfigure, ConfigureErrorLabelNotString)
 {
 	std::string configureErrorLabelNotString = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 {
                     "label": 42,
                     "pivot_id":"M_2367_3_15_4",
@@ -481,11 +484,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorLabelNotString)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorNoSubtypes) 
+TEST_F(TestPluginConfigure, ConfigureErrorNoSubtypes)
 {
 	std::string configureErrorNoSubtypes = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 {
                     "label":"TS-1",
                     "pivot_id":"M_2367_3_15_4",
@@ -512,11 +515,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorNoSubtypes)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorSubtypesNotArray) 
+TEST_F(TestPluginConfigure, ConfigureErrorSubtypesNotArray)
 {
 	std::string configureErrorSubtypesNotArray = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 {
                     "label":"TS-1",
                     "pivot_id":"M_2367_3_15_4",
@@ -544,11 +547,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorSubtypesNotArray)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorSubtypesNotContainString) 
+TEST_F(TestPluginConfigure, ConfigureErrorSubtypesNotContainString)
 {
 	std::string configureErrorSubtypesNotContainString = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 {
                     "label":"TS-1",
                     "pivot_id":"M_2367_3_15_4",
@@ -578,11 +581,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorSubtypesNotContainString)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorSubtypesWithUnknownSubtype) 
+TEST_F(TestPluginConfigure, ConfigureErrorSubtypesWithUnknownSubtype)
 {
 	std::string configureErrorSubtypesWithUnknownSubtype = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 {
                     "label":"TS-1",
                     "pivot_id":"M_2367_3_15_4",
@@ -612,11 +615,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorSubtypesWithUnknownSubtype)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorSubtypesWithMissingCycle) 
+TEST_F(TestPluginConfigure, ConfigureErrorSubtypesWithMissingCycle)
 {
 	std::string configureErrorSubtypesWithMissingCycle = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 {
                     "label":"TS-1",
                     "pivot_id":"M_2367_3_15_4",
@@ -635,7 +638,7 @@ TEST_F(TestPluginConfigure, ConfigureErrorSubtypesWithMissingCycle)
             ]
         }
     });
-    
+
     filter->setJsonConfig(configureErrorSubtypesWithMissingCycle);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
@@ -646,11 +649,11 @@ TEST_F(TestPluginConfigure, ConfigureErrorSubtypesWithMissingCycle)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureErrorCycleNotInt) 
+TEST_F(TestPluginConfigure, ConfigureErrorCycleNotInt)
 {
 	std::string configureErrorCycleNotInt = QUOTE({
-        "exchanged_data": {         
-            "datapoints" : [          
+        "exchanged_data": {
+            "datapoints" : [
                 {
                     "label":"TS-1",
                     "pivot_id":"M_2367_3_15_4",
@@ -670,7 +673,7 @@ TEST_F(TestPluginConfigure, ConfigureErrorCycleNotInt)
             ]
         }
     });
-    
+
     filter->setJsonConfig(configureErrorCycleNotInt);
     auto dataTypes = filter->getConfigPlugin().getDataTypes();
     auto dataSystem = filter->getConfigPlugin().getDataSystem();
@@ -681,7 +684,7 @@ TEST_F(TestPluginConfigure, ConfigureErrorCycleNotInt)
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureOKSps) 
+TEST_F(TestPluginConfigure, ConfigureOKSps)
 {
 	filter->setJsonConfig(configureOKSps);
     const auto& dataTypes = filter->getConfigPlugin().getDataTypes();
@@ -689,34 +692,37 @@ TEST_F(TestPluginConfigure, ConfigureOKSps)
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
     for(const auto& dataType : dataTypes) {
         ASSERT_EQ(dataSystem.count(dataType), 1) << "Missing data type " << dataType;
-        ASSERT_EQ(dataSystem.at(dataType).size(), 1) << "Unexpected number of " << dataType << " stored";
-        ASSERT_TRUE(filter->getConfigPlugin().hasDataForType(dataType, expectedPivotIds[dataType]))
-            << "No rule found for type " << dataType << " and pivot_id " << expectedPivotIds[dataType];
-        const auto& dataInfo = dataSystem.at(dataType).at(0);
-        ASSERT_NE(dataInfo.get(), nullptr) << "Data of type " << dataType << " is null";
-        DataInfo* tmp = nullptr;
-        if (dataType == "acces") {
-            tmp = dynamic_cast<CyclicDataInfo*>(dataInfo.get());
-        }
-        else if (dataType == "prt.inf") {
-            tmp = dynamic_cast<DataInfo*>(dataInfo.get());
-        }
-        ASSERT_NE(tmp, nullptr) << "Wrong object class stored for type " << dataType;
-        ASSERT_STREQ(dataInfo->pivotId.c_str(), expectedPivotIds[dataType].c_str())
-            << "Unexpected pivot ID "<< dataInfo->pivotId << " for type " << dataType;
-        ASSERT_STREQ(dataInfo->pivotType.c_str(), "SpsTyp")
-            << "Unexpected pivot type "<< dataInfo->pivotType << " for type " << dataType;
-        ASSERT_STREQ(dataInfo->assetName.c_str(), expectedAssetNames[dataType].c_str())
-            << "Unexpected asset name "<< dataInfo->assetName << " for type " << dataType;
-        if (dataType == "acces") {
-            auto cyclicDataInfo = std::dynamic_pointer_cast<CyclicDataInfo>(dataInfo);
-            ASSERT_EQ(cyclicDataInfo->cycleSec, 30)
-                << "Unexpected cycle seconds " << cyclicDataInfo->cycleSec << " for type " << dataType;
+        // Transient data is not stored in the data system
+        if( dataType != "transient") {
+            ASSERT_EQ(dataSystem.at(dataType).size(), 1) << "Unexpected number of " << dataType << " stored";
+            ASSERT_TRUE(filter->getConfigPlugin().hasDataForType(dataType, expectedPivotIds[dataType]))
+                << "No rule found for type " << dataType << " and pivot_id " << expectedPivotIds[dataType];
+            const auto& dataInfo = dataSystem.at(dataType).at(0);
+            ASSERT_NE(dataInfo.get(), nullptr) << "Data of type " << dataType << " is null";
+            DataInfo* tmp = nullptr;
+            if (dataType == "acces") {
+                tmp = dynamic_cast<CyclicDataInfo*>(dataInfo.get());
+            }
+            else if (dataType == "prt.inf") {
+                tmp = dynamic_cast<DataInfo*>(dataInfo.get());
+            }
+            ASSERT_NE(tmp, nullptr) << "Wrong object class stored for type " << dataType;
+            ASSERT_STREQ(dataInfo->pivotId.c_str(), expectedPivotIds[dataType].c_str())
+                << "Unexpected pivot ID "<< dataInfo->pivotId << " for type " << dataType;
+            ASSERT_STREQ(dataInfo->pivotType.c_str(), "SpsTyp")
+                << "Unexpected pivot type "<< dataInfo->pivotType << " for type " << dataType;
+            ASSERT_STREQ(dataInfo->assetName.c_str(), expectedAssetNames[dataType].c_str())
+                << "Unexpected asset name "<< dataInfo->assetName << " for type " << dataType;
+            if (dataType == "acces") {
+                auto cyclicDataInfo = std::dynamic_pointer_cast<CyclicDataInfo>(dataInfo);
+                ASSERT_EQ(cyclicDataInfo->cycleSec, 30)
+                    << "Unexpected cycle seconds " << cyclicDataInfo->cycleSec << " for type " << dataType;
+            }
         }
     }
 }
 
-TEST_F(TestPluginConfigure, ConfigureOKDps) 
+TEST_F(TestPluginConfigure, ConfigureOKDps)
 {
 	filter->setJsonConfig(configureOKDps);
     const auto& dataTypes = filter->getConfigPlugin().getDataTypes();
@@ -724,35 +730,97 @@ TEST_F(TestPluginConfigure, ConfigureOKDps)
     ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
     for(const auto& dataType : dataTypes) {
         ASSERT_EQ(dataSystem.count(dataType), 1) << "Missing data type " << dataType;
-        ASSERT_EQ(dataSystem.at(dataType).size(), 1) << "Unexpected number of " << dataType << " stored";
-        ASSERT_TRUE(filter->getConfigPlugin().hasDataForType(dataType, expectedPivotIds[dataType]))
-            << "No rule found for type " << dataType << " and pivot_id " << expectedPivotIds[dataType];
-        const auto& dataInfo = dataSystem.at(dataType).at(0);
-        ASSERT_NE(dataInfo.get(), nullptr) << "Data of type " << dataType << " is null";
-        DataInfo* tmp = nullptr;
-        if (dataType == "acces") {
-            tmp = dynamic_cast<CyclicDataInfo*>(dataInfo.get());
-        }
-        else if (dataType == "prt.inf") {
-            tmp = dynamic_cast<DataInfo*>(dataInfo.get());
-        }
-        ASSERT_NE(tmp, nullptr) << "Wrong object class stored for type " << dataType;
-        ASSERT_STREQ(dataInfo->pivotId.c_str(), expectedPivotIds[dataType].c_str())
-            << "Unexpected pivot ID "<< dataInfo->pivotId << " for type " << dataType;
-        ASSERT_STREQ(dataInfo->pivotType.c_str(), "DpsTyp")
-            << "Unexpected pivot type "<< dataInfo->pivotType << " for type " << dataType;
-        ASSERT_STREQ(dataInfo->assetName.c_str(), expectedAssetNames[dataType].c_str())
-            << "Unexpected asset name "<< dataInfo->assetName << " for type " << dataType;
-        if (dataType == "acces") {
-            auto cyclicDataInfo = std::dynamic_pointer_cast<CyclicDataInfo>(dataInfo);
-            ASSERT_EQ(cyclicDataInfo->cycleSec, 30)
-                << "Unexpected cycle seconds " << cyclicDataInfo->cycleSec << " for type " << dataType;
+        // Transient data is not stored in the data system
+        if( dataType != "transient") {
+            ASSERT_EQ(dataSystem.at(dataType).size(), 1) << "Unexpected number of " << dataType << " stored";
+            ASSERT_TRUE(filter->getConfigPlugin().hasDataForType(dataType, expectedPivotIds[dataType]))
+                << "No rule found for type " << dataType << " and pivot_id " << expectedPivotIds[dataType];
+            const auto& dataInfo = dataSystem.at(dataType).at(0);
+            ASSERT_NE(dataInfo.get(), nullptr) << "Data of type " << dataType << " is null";
+            DataInfo* tmp = nullptr;
+            if (dataType == "acces") {
+                tmp = dynamic_cast<CyclicDataInfo*>(dataInfo.get());
+            }
+            else if (dataType == "prt.inf") {
+                tmp = dynamic_cast<DataInfo*>(dataInfo.get());
+            }
+            ASSERT_NE(tmp, nullptr) << "Wrong object class stored for type " << dataType;
+            ASSERT_STREQ(dataInfo->pivotId.c_str(), expectedPivotIds[dataType].c_str())
+                << "Unexpected pivot ID "<< dataInfo->pivotId << " for type " << dataType;
+            ASSERT_STREQ(dataInfo->pivotType.c_str(), "DpsTyp")
+                << "Unexpected pivot type "<< dataInfo->pivotType << " for type " << dataType;
+            ASSERT_STREQ(dataInfo->assetName.c_str(), expectedAssetNames[dataType].c_str())
+                << "Unexpected asset name "<< dataInfo->assetName << " for type " << dataType;
+            if (dataType == "acces") {
+                auto cyclicDataInfo = std::dynamic_pointer_cast<CyclicDataInfo>(dataInfo);
+                ASSERT_EQ(cyclicDataInfo->cycleSec, 30)
+                    << "Unexpected cycle seconds " << cyclicDataInfo->cycleSec << " for type " << dataType;
+            }
         }
     }
 }
 
-TEST_F(TestPluginConfigure, HasDataForTypeInvalidType) 
+TEST_F(TestPluginConfigure, HasDataForTypeInvalidType)
 {
 	filter->setJsonConfig(configureOKSps);
     ASSERT_FALSE(filter->getConfigPlugin().hasDataForType("invalid_type", "M_2367_3_15_4"));
+}
+
+TEST_F(TestPluginConfigure, ConfigurePrtInf)
+{
+	std::string configuration = QUOTE({
+        "exchanged_data": {
+            "datapoints" : [
+                {
+                    "label":"TS-OK",
+                    "pivot_id":"M_2367_3_15_6",
+                    "pivot_type":"SpsTyp",
+                    "pivot_subtypes": [
+                        "prt.inf",
+                        "transient"
+                    ],
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_3",
+                            "address":"3271614"
+                        }
+                    ]
+                },
+                {
+                    "label":"TS-WARNING",
+                    "pivot_id":"M_2367_3_15_4",
+                    "pivot_type":"SpsTyp",
+                    "pivot_subtypes": [
+                        "prt.inf"
+                    ],
+                    "protocols":[
+                        {
+                            "name":"IEC104",
+                            "typeid":"M_ME_NC_1",
+                            "address":"3271612"
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+    filter->setJsonConfig(configuration);
+
+    auto dataTypes = filter->getConfigPlugin().getDataTypes();
+    auto dataSystem = filter->getConfigPlugin().getDataSystem();
+    ASSERT_EQ(dataTypes.size(), expectedPivotIds.size());
+
+    ASSERT_EQ(dataSystem.count("prt.inf"), 1) << "Missing data type prt.inf";
+    auto di_list = dataSystem.at("prt.inf");
+    ASSERT_EQ(di_list.size(), 2) << "Unexpected number of prt.inf data stored";
+    for (const auto& di : di_list) {
+        if (di->pivotId == "M_2367_3_15_6") {
+            ASSERT_FALSE(di->isTransientWarning);
+        }
+        if (di->pivotId == "M_2367_3_15_4") {
+            ASSERT_TRUE(di->isTransientWarning);
+        }
+    }
+
 }

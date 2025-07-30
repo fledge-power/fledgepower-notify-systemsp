@@ -59,7 +59,7 @@ private:
     void m_reset();
     void m_importDatapoint(const rapidjson::Value& datapoint);
 
-    std::vector<std::string> m_allDataTypes{"acces", "prt.inf"};
+    std::vector<std::string> m_allDataTypes{"acces",  "prt.inf", "transient"};
     std::map<std::string, std::vector<std::shared_ptr<DataInfo>>> m_dataSystem;
 };
 
