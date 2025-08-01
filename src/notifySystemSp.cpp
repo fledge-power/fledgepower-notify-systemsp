@@ -6,7 +6,7 @@
  * Released under the Apache 2.0 Licence
  *
  * Author: Yannick Marchetaux
- * 
+ *
  */
 #include <regex>
 #include <datapoint.h>
@@ -31,7 +31,7 @@ NotifySystemSp::~NotifySystemSp() {
 
 /**
  * Modification of configuration
- * 
+ *
  * @param jsonExchanged : configuration ExchangedData
  */
 void NotifySystemSp::setJsonConfig(const std::string& jsonExchanged) {
@@ -42,7 +42,7 @@ void NotifySystemSp::setJsonConfig(const std::string& jsonExchanged) {
 
 /**
  * Get the json template of a reading for the given data type
- * 
+ *
  * @param dataType : Type of status point
  * @return Json reading template
  */
@@ -123,7 +123,7 @@ void NotifySystemSp::stopCycles() {
 
 /**
  * Thread function used to send one status point periodically
- * 
+ *
  * @param messageTemplate String containing the template of the reading json message to send
  * @param pivotId Pivot ID to use in the message
  * @param pivotType Pivot Type to use in the message
@@ -167,7 +167,7 @@ void NotifySystemSp::runCycles(const std::string& messageTemplate, const std::st
 
 /**
  * Send the reading data of a status point
- * 
+ *
  * @param assetName Name of the asset that will contain the reading
  * @param jsonReading Json string representing the reading to send
  */
@@ -185,7 +185,7 @@ void NotifySystemSp::sendReading(const std::string& assetName, const std::string
 
 /**
  * Generate a reading json from a template and values
- * 
+ *
  * @param messageTemplate String containing the template of the reading json message to send
  * @param pivotId Pivot ID to use in the message
  * @param pivotType Pivot Type to use in the message
@@ -218,7 +218,7 @@ std::string NotifySystemSp::fillTemplate(const std::string& messageTemplate, con
 
 /**
  * Calls the ingest function with the given reading.
- * 
+ *
  * @param reading Reading to send through ingest
  */
 void NotifySystemSp::ingest(Reading &reading) {
@@ -278,7 +278,7 @@ bool NotifySystemSp::notify(const std::string& /*notificationName*/, const std::
     }
 
     std::string asset = doc["asset"].GetString();
-    if(asset != "prt.inf") {
+    if(asset != "prt.inf" && asset != "connx_status" && asset != "gi_status") {
         UtilityPivot::log_debug("%s Received notification with unhandled 'asset' value, ignoring: %s", beforeLog.c_str(), triggerReason.c_str());
         return false;
     }
@@ -294,40 +294,48 @@ bool NotifySystemSp::notify(const std::string& /*notificationName*/, const std::
     }
 
     std::string reason = doc["reason"].GetString();
-    bool connected = false;
-    if (reason == "connected") {
-        connected = true;
+    if (asset == "gi_status" && reason == "finished"){
+        UtilityPivot::log_debug("%s Received 'gi_status' notification with 'finished' reason, sending reading", beforeLog.c_str());
+       bool ret = sendPrtInfSP(true);
+       ret = ret && sendPrtInfSP(false);
+
+       return ret;
     }
-    else if (reason == "connection lost") {
-        connected = false;
+    else if(asset == "connx_status"){
+        UtilityPivot::log_debug("%s Received 'connx_status' notification with '%s' reason, ignoring", beforeLog.c_str(), triggerReason.c_str());
+        return false;
     }
     else {
         UtilityPivot::log_error("%s Received notification with unhandled 'reason' value, ignoring: %s", beforeLog.c_str(), triggerReason.c_str());
         return false;
     }
 
-    return sendConnectionLossSP(connected);
+    return true;
 }
 
 /**
- * Function sending all the Connection Loss Status Point Readings
- * 
- * @param connected True if the status to send represent a connection fully established, false for a connection loss
- * @return True if all messages were sent successfully, else false
+ * Sends a 'prt.inf' reading with the given value.
+ *
+ * @param value The value to send in the 'prt.inf' reading
+ * @return True if the reading was sent successfully, else false
  */
-bool NotifySystemSp::sendConnectionLossSP(bool connected) {
+bool NotifySystemSp::sendPrtInfSP(bool value) {
+    std::string beforeLog = ConstantsSystem::NamePlugin + " - NotifySystemSp::sendPrtInfSP -";
     std::string messageTemplate = getMessageTemplate("prt.inf");
     long currentTimeMs = UtilityPivot::getCurrentTimestampMs();
     const auto& dataSystem = m_configPlugin.getDataSystem();
     bool success = true;
     for(const auto& dataInfo : dataSystem.at("prt.inf")) {
         std::string jsonReading = fillTemplate(messageTemplate, dataInfo->pivotId, dataInfo->pivotType,
-                                               currentTimeMs, connected);
+                                               currentTimeMs, value);
         if (jsonReading.size() == 0) {
             success = false;
             continue;
         }
         // Send a reading with data from the template
+        if(dataInfo->isTransientWarning){
+            UtilityPivot::log_warn("%s sending transient prt.inf without transient subtype in configuration prt.inf always transient", beforeLog.c_str());
+        }
         sendReading(dataInfo->assetName, jsonReading);
     }
     return success;

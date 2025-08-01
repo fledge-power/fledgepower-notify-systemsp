@@ -18,7 +18,7 @@ static std::string configure = QUOTE({
     "exchanged_data": {
         "value" : {
             "exchanged_data": {
-                "datapoints" : [          
+                "datapoints" : [
                     {
                         "label":"TS-1",
                         "pivot_id":"M_2367_3_15_4",
@@ -80,7 +80,7 @@ static std::string configure = QUOTE({
                                 "address":"3271615"
                             }
                         ]
-                    }   
+                    }
                 ]
             }
         }
@@ -99,7 +99,7 @@ std::string emptyConfig = QUOTE({
         }
     }
 });
- 
+
 extern "C" {
 	PLUGIN_INFORMATION *plugin_info();
 	PLUGIN_HANDLE plugin_init(ConfigCategory *config);
@@ -123,16 +123,16 @@ protected:
     {
         PLUGIN_INFORMATION *info = plugin_info();
 		ConfigCategory *config =  new ConfigCategory("systemsp", info->config);
-		ASSERT_NE(config, nullptr);		
+		ASSERT_NE(config, nullptr);
 		config->setItemsValueFromDefault();
 		config->setValue("enable", "true");
-		
+
 		PLUGIN_HANDLE handle = nullptr;
         ASSERT_NO_THROW(handle = plugin_init(config));
 		filter = static_cast<NotifySystemSp *>(handle);
 
         ASSERT_NO_THROW(plugin_registerIngest(reinterpret_cast<PLUGIN_HANDLE*>(filter), (void*)ingestCallback, nullptr));
-        
+
         ASSERT_NO_THROW(plugin_reconfigure(reinterpret_cast<PLUGIN_HANDLE*>(filter), configure));
         ASSERT_TRUE(filter->isEnabled());
 
@@ -158,7 +158,7 @@ protected:
     }
 
     template<class... Args>
-    static void debug_print(std::string format, Args&&... args) {    
+    static void debug_print(std::string format, Args&&... args) {
         printf(format.append("\n").c_str(), std::forward<Args>(args)...);
         fflush(stdout);
     }
@@ -217,7 +217,7 @@ protected:
                 std::lock_guard<std::recursive_mutex> guard(storedReadingsMutex);
                 expectedCountNotReached = counter < expectedCount;
             }
-        } 
+        }
     }
 
     static bool hasChild(Datapoint& dp, const std::string& childLabel) {
@@ -306,7 +306,7 @@ protected:
         std::string value;
     };
     static void validateReading(std::shared_ptr<Reading> currentReading, const std::string& assetName, const std::string& rootObjectName,
-                                const std::vector<std::string>& allAttributeNames, const std::map<std::string, ReadingInfo>& attributes) { 
+                                const std::vector<std::string>& allAttributeNames, const std::map<std::string, ReadingInfo>& attributes) {
         ASSERT_NE(nullptr, currentReading.get()) << assetName << ": Invalid reading";
         ASSERT_EQ(assetName, currentReading->getAssetName());
         // Validate data_object structure received
@@ -391,7 +391,7 @@ TEST_F(TestSystemSp, CyclicAccessMessages)
         "exchanged_data": {
             "value" : {
                 "exchanged_data": {
-                    "datapoints" : [          
+                    "datapoints" : [
                         {
                             "label":"TS-1",
                             "pivot_id":"M_2367_3_15_4",
@@ -423,13 +423,13 @@ TEST_F(TestSystemSp, CyclicAccessMessages)
                                     "address":"3271613"
                                 }
                             ]
-                        } 
+                        }
                     ]
                 }
             }
         }
     });
-    
+
     debug_print("Reconfigure plugin");
     ASSERT_NO_THROW(plugin_reconfigure(reinterpret_cast<PLUGIN_HANDLE*>(filter), customConfig));
     ASSERT_TRUE(filter->isEnabled());
@@ -478,7 +478,7 @@ TEST_F(TestSystemSp, CyclicAccessMessages)
     waitUntil(ingestCallbackCalled, 1, 1100);
     ASSERT_EQ(ingestCallbackCalled, 1);
     resetCounters();
-    
+
     pivotTimestampPair = UtilityPivot::fromTimestamp(UtilityPivot::getCurrentTimestampMs());
     sec = pivotTimestampPair.first;
     currentReading = popFrontReading();
@@ -498,7 +498,7 @@ TEST_F(TestSystemSp, CyclicAccessMessages)
     waitUntil(ingestCallbackCalled, 1, 1100);
     ASSERT_EQ(ingestCallbackCalled, 1);
     resetCounters();
-    
+
     pivotTimestampPair = UtilityPivot::fromTimestamp(UtilityPivot::getCurrentTimestampMs());
     sec = pivotTimestampPair.first;
     currentReading = popFrontReading();
@@ -518,7 +518,7 @@ TEST_F(TestSystemSp, CyclicAccessMessages)
     waitUntil(ingestCallbackCalled, 1, 1100);
     ASSERT_EQ(ingestCallbackCalled, 1);
     resetCounters();
-    
+
     pivotTimestampPair = UtilityPivot::fromTimestamp(UtilityPivot::getCurrentTimestampMs());
     sec = pivotTimestampPair.first;
     currentReading = popFrontReading();
@@ -582,7 +582,7 @@ TEST_F(TestSystemSp, CyclicAccessMessages)
     ASSERT_EQ(ingestCallbackCalled, 0);
 }
 
-TEST_F(TestSystemSp, ConnectionLossMessages) 
+TEST_F(TestSystemSp, ConnectionLossMessages)
 {
 	std::string customConfig = QUOTE({
         "enable" :{
@@ -591,7 +591,7 @@ TEST_F(TestSystemSp, ConnectionLossMessages)
         "exchanged_data": {
             "value" : {
                 "exchanged_data": {
-                    "datapoints" : [          
+                    "datapoints" : [
                          {
                             "label":"TS-3",
                             "pivot_id":"M_2367_3_15_6",
@@ -621,13 +621,13 @@ TEST_F(TestSystemSp, ConnectionLossMessages)
                                     "address":"3271615"
                                 }
                             ]
-                        }   
+                        }
                     ]
                 }
             }
         }
     });
-    
+
     debug_print("Reconfigure plugin");
     ASSERT_NO_THROW(plugin_reconfigure(reinterpret_cast<PLUGIN_HANDLE*>(filter), customConfig));
     ASSERT_TRUE(filter->isEnabled());
@@ -692,14 +692,14 @@ TEST_F(TestSystemSp, ConnectionLossMessages)
     ASSERT_EQ(ingestCallbackCalled, 0);
 
     debug_print("Testing connected notification");
-    // Send notification with reason "connected"
+    // Send notification with gi_status finished
     std::string notifConnected = QUOTE({
-        "asset": "prt.inf",
-        "reason": "connected"
+        "asset": "gi_status",
+        "reason": "finished"
     });
     ASSERT_TRUE(plugin_deliver(reinterpret_cast<PLUGIN_HANDLE*>(filter), "dummyDeliveryName", "dummyNotificationName",
                 notifConnected, "dummyMessage"));
-    ASSERT_EQ(ingestCallbackCalled, 2);
+    ASSERT_EQ(ingestCallbackCalled, 4);
     resetCounters();
 
     // Readings are received in unknown order as it depends on json parsing order
@@ -734,15 +734,16 @@ TEST_F(TestSystemSp, ConnectionLossMessages)
         if(HasFatalFailure()) return;
     }
 
-    debug_print("Testing connection lost notification");
+    debug_print("Testing connection connx_status not connected notification");
     // Send notification with reason "connection lost"
     std::string notifConnectionLost = QUOTE({
-        "asset": "prt.inf",
-        "reason": "connection lost"
+        "asset": "connx_status",
+        "reason": "not connected"
     });
-    ASSERT_TRUE(plugin_deliver(reinterpret_cast<PLUGIN_HANDLE*>(filter), "dummyDeliveryName", "dummyNotificationName",
+    ASSERT_FALSE(plugin_deliver(reinterpret_cast<PLUGIN_HANDLE*>(filter), "dummyDeliveryName", "dummyNotificationName",
                 notifConnectionLost, "dummyMessage"));
-    ASSERT_EQ(ingestCallbackCalled, 2);
+    //We ignore the connx
+    ASSERT_EQ(ingestCallbackCalled, 0);
     resetCounters();
 
     // Readings are received in unknown order as it depends on json parsing order
@@ -777,7 +778,7 @@ TEST_F(TestSystemSp, ConnectionLossMessages)
     }
 }
 
-TEST_F(TestSystemSp, CyclicAndConnectionLossMessages) 
+TEST_F(TestSystemSp, CyclicAndConnectionLossMessages)
 {
     // Note that in this configuration TS-2 has all known existing pivot_subtypes
     // as this is a supported feature even if it may not always make sense at user level
@@ -788,7 +789,7 @@ TEST_F(TestSystemSp, CyclicAndConnectionLossMessages)
         "exchanged_data": {
             "value" : {
                 "exchanged_data": {
-                    "datapoints" : [          
+                    "datapoints" : [
                         {
                             "label":"TS-1",
                             "pivot_id":"M_2367_3_15_4",
@@ -884,47 +885,16 @@ TEST_F(TestSystemSp, CyclicAndConnectionLossMessages)
         if(HasFatalFailure()) return;
     }
 
-    debug_print("Testing connection lost notification");
+    debug_print("Testing connection connx_status not connected notification");
     // Send notification with reason "connection lost"
     std::string notifConnectionLost = QUOTE({
-        "asset": "prt.inf",
-        "reason": "connection lost"
+        "asset": "connx_status",
+        "reason": "not connected"
     });
-    ASSERT_TRUE(plugin_deliver(reinterpret_cast<PLUGIN_HANDLE*>(filter), "dummyDeliveryName", "dummyNotificationName",
+    ASSERT_FALSE(plugin_deliver(reinterpret_cast<PLUGIN_HANDLE*>(filter), "dummyDeliveryName", "dummyNotificationName",
                 notifConnectionLost, "dummyMessage"));
-    ASSERT_EQ(ingestCallbackCalled, 2);
+    ASSERT_EQ(ingestCallbackCalled, 0);
     resetCounters();
-
-    // Readings are received in unknown order as it depends on json parsing order
-    pivotTimestampPair = UtilityPivot::fromTimestamp(UtilityPivot::getCurrentTimestampMs());
-    sec = pivotTimestampPair.first;
-    for(int i=0 ; i<2 ; i++) {
-        currentReading = popFrontReading();
-        ASSERT_NE(nullptr, currentReading.get()) << "Invalid reading at loop " << i;
-        if (currentReading->getAssetName() == "TS-3") {
-            validateReading(currentReading, "TS-3", "PIVOT", allPivotAttributeNames, {
-                {"GTIS.Identifier", {"string", "M_2367_3_15_6"}},
-                {"GTIS.Cause.stVal", {"int64_t", "3"}},
-                {"GTIS.TmOrg.stVal", {"string", "substituted"}},
-                {"GTIS.SpsTyp.stVal", {"int64_t", "0"}},
-                {"GTIS.SpsTyp.t.SecondSinceEpoch", {"int64_t_range", std::to_string(sec-1) + ";" + std::to_string(sec)}},
-                {"GTIS.SpsTyp.t.FractionOfSecond", {"int64_t_range", "0;99999999"}},
-                {"GTIS.SpsTyp.q.Source", {"string", "substituted"}},
-            });
-        }
-        else {
-            validateReading(currentReading, "TS-2", "PIVOT", allPivotAttributeNames, {
-                {"GTIS.Identifier", {"string", "M_2367_3_15_5"}},
-                {"GTIS.Cause.stVal", {"int64_t", "3"}},
-                {"GTIS.TmOrg.stVal", {"string", "substituted"}},
-                {"GTIS.DpsTyp.stVal", {"string", "off"}},
-                {"GTIS.DpsTyp.t.SecondSinceEpoch", {"int64_t_range", std::to_string(sec-1) + ";" + std::to_string(sec)}},
-                {"GTIS.DpsTyp.t.FractionOfSecond", {"int64_t_range", "0;99999999"}},
-                {"GTIS.DpsTyp.q.Source", {"string", "substituted"}},
-            });
-        }
-        if(HasFatalFailure()) return;
-    }
 
     // Nothing received 1 second after startup
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -979,7 +949,7 @@ TEST_F(TestSystemSp, CyclicAndConnectionLossMessages)
     ASSERT_EQ(ingestCallbackCalled, 0);
 }
 
-TEST_F(TestSystemSp, PluginDisabled) 
+TEST_F(TestSystemSp, PluginDisabled)
 {
 	static std::string customConfig = QUOTE({
         "enable" :{
@@ -988,7 +958,7 @@ TEST_F(TestSystemSp, PluginDisabled)
         "exchanged_data": {
             "value" : {
                 "exchanged_data": {
-                    "datapoints" : [          
+                    "datapoints" : [
                         {
                             "label":"TS-1",
                             "pivot_id":"M_2367_3_15_4",
@@ -1034,11 +1004,11 @@ TEST_F(TestSystemSp, PluginDisabled)
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ASSERT_EQ(ingestCallbackCalled, 0);
 
-    debug_print("Testing connection lost notification");
-    // Send notification with reason "connection lost" (ignored as plugin disabled)
+    debug_print("Testing not connected notification");
+    // Send notification with reason "not connected" (ignored as plugin disabled)
     std::string notifConnectionLost = QUOTE({
-        "asset": "prt.inf",
-        "reason": "connection lost"
+        "asset": "connx_status",
+        "reason": "not connected"
     });
     ASSERT_FALSE(plugin_deliver(reinterpret_cast<PLUGIN_HANDLE*>(filter), "dummyDeliveryName", "dummyNotificationName",
                 notifConnectionLost, "dummyMessage"));
@@ -1051,7 +1021,7 @@ TEST_F(TestSystemSp, PluginDisabled)
 }
 
 
-TEST_F(TestSystemSp, GetMessageTemplate) 
+TEST_F(TestSystemSp, GetMessageTemplate)
 {
     const std::string defaultMessageTemplate = QUOTE({
         "PIVOT": {
@@ -1081,7 +1051,7 @@ TEST_F(TestSystemSp, GetMessageTemplate)
     ASSERT_STREQ(filter->getMessageTemplate("prt.inf").c_str(), defaultMessageTemplate.c_str());
 }
 
-TEST_F(TestSystemSp, InvalidPivotType) 
+TEST_F(TestSystemSp, InvalidPivotType)
 {
     // Load a config with no TS
     static std::string customConfig = QUOTE({
@@ -1113,16 +1083,16 @@ TEST_F(TestSystemSp, InvalidPivotType)
     debug_print("Restart cycles");
     ASSERT_NO_THROW(filter->stopCycles());
     ASSERT_NO_THROW(filter->startCycles());
-    
+
     // Let the cycle loop a few times and check that no message was sent
     debug_print("Wait for cycles execution...");
     std::this_thread::sleep_for(std::chrono::seconds(3));
     ASSERT_EQ(ingestCallbackCalled, 0);
 
-    // Send notification with reason "connection lost" (ignored as invaid pivot type)
+    // Send notification with reason "not connected" (ignored as invaid pivot type)
     std::string notifConnectionLost = QUOTE({
-        "asset": "prt.inf",
-        "reason": "connection lost"
+        "asset": "connx_status",
+        "reason": "not connected"
     });
     ASSERT_FALSE(plugin_deliver(reinterpret_cast<PLUGIN_HANDLE*>(filter), "dummyDeliveryName", "dummyNotificationName",
                 notifConnectionLost, "dummyMessage"));
