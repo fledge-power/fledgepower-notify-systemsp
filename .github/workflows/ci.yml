@@ -109,4 +109,4 @@ jobs:
           --define sonar.projectKey="fledge-power_fledgepower-notify-systemsp" \
           --define sonar.inclusions="src/*,include/*" \
           --define sonar.coverageReportPaths="build/systemspn_coverage_sonar-sonarqube.xml" \
-          --define sonar.branch.name="${{ github.event.inputs.tags || github.ref }}"
+          --define sonar.branch.name="${{ github.event.inputs.tags || github.ref_name }}"
